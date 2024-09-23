@@ -1,12 +1,16 @@
 package ru.kata.spring.boot_security.demo.models;
 
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -16,35 +20,20 @@ public class User {
 
     private String password;
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     private String name;
 
     private String surname;
 
     private byte age;
 
+    @ManyToMany
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+
+    private Collection<Role> roles;
+
     public User() {
-    }
-
-    public User(String name, String surname, byte age) {
-        this.name = name;
-        this.surname = surname;
-        this.age = age;
-    }
-
-    public byte getAge() {
-        return age;
-    }
-
-    public void setAge(byte age) {
-        this.age = age;
     }
 
     public long getId() {
@@ -53,6 +42,35 @@ public class User {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public byte getAge() {
+        return age;
+    }
+
+    public void setAge(byte age) {
+        this.age = age;
     }
 
     public String getName() {
@@ -71,8 +89,29 @@ public class User {
         this.surname = surname;
     }
 
+    @Override
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
 
     public void setUsername(String username) {
@@ -88,16 +127,5 @@ public class User {
                 ", age=" + age +
                 '}';
     }
-
-    public Collection<Role> getRoles() {
-        return this.roles;
-    }
-
-    @ManyToMany
-    @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-
-    private Collection<Role> roles;
 
 }
