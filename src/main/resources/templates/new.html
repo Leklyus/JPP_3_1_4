@@ -21,6 +21,15 @@
     <label for="age">Age:</label>
     <input type="text" th:field="*{age}" id="age"/>
     <br/>
+    <label for="password">Password:</label>
+    <input type="password" th:field="*{password}" id="password"/>
+    <br/>
+    <label for="role">Roles</label>
+    <select class="form-control" multiple id="role" name="roles">
+        <option th:each="role : ${roles}" th:text="${role.getName()}"
+                th:value="${role.getId()}"></option>
+    </select>
+    <br/>
     <input type="submit" value="Create"/>
 
 </form>

@@ -18,6 +18,7 @@
             <th>NAME</th>
             <th>SURNAME</th>
             <th>AGE</th>
+            <th>ROLES</th>
         </tr>
         <tr th:each="user : ${users}">
             <td th:text="${user.id}"></td>
@@ -25,6 +26,11 @@
             <td th:text="${user.name}"></td>
             <td th:text="${user.surname}"></td>
             <td th:text="${user.age}"></td>
+            <td>
+                <ul>
+                <li th:each="role : ${user.roles}" th:text="${role.name}"></li>
+                </ul>
+            </td>
             <td><a th:href="@{/admin/edit?id={id}(id=${user.id})}">Edit</a></td>
             <td>
                 <form th:method="DELETE" th:action="@{/admin/delete?id={id}(id=${user.id})}">

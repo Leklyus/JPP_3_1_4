@@ -12,6 +12,12 @@
     <li>Name: <span th:text="*{name}"></span></li>
     <li>Surname: <span th:text="*{surname}"></span></li>
     <li>Age: <span th:text="*{age}"></span></li>
+    <li>Roles:
+        <ul>
+            <li th:each="role : ${user.roles}" th:text="${role.name}"></li>
+        </ul>
+    </li>
+
 </ul>
 
 Logged in user: <b th:inline="text"> [[${#httpServletRequest.remoteUser}]] </b>
