@@ -47,9 +47,10 @@ public class DataInitializer implements CommandLineRunner {
         roleRepository.saveAndFlush(role2);
 
         User user1 = new User();
-        user1.setUsername("user");
-        user1.setName("Bob");
-        user1.setSurname("Mikly");
+//        user1.setUsername("user");
+        user1.setEmail("user@user.com");
+        user1.setFirstname("Bob");
+        user1.setLastname("Mikly");
         user1.setAge((byte) 30);
         user1.setPassword(passwordEncoder.encode("user"));
 
@@ -60,9 +61,10 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.saveAndFlush(user1);
 
         User user2 = new User();
-        user2.setUsername("admin");
-        user2.setName("Jhon");
-        user2.setSurname("Torris");
+//        user2.setUsername("admin");
+        user2.setEmail("admin@admin.com");
+        user2.setFirstname("Jhon");
+        user2.setLastname("Torris");
         user2.setAge((byte) 26);
         user2.setPassword(passwordEncoder.encode("admin"));
 

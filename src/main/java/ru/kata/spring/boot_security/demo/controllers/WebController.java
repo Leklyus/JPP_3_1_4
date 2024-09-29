@@ -1,15 +1,17 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.RoleService;
 import ru.kata.spring.boot_security.demo.services.UserService;
-
-import java.security.Principal;
 
 @Controller
 public class WebController {
@@ -25,36 +27,32 @@ public class WebController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping(value = "/")
+    @GetMapping(value = {"/", "/index"})
     public String showPage() {
-        return "index";
+        return "login";
     }
 
-    @GetMapping(value = "/index")
-    public String showIndex() {
-        return "index";
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
 
     @GetMapping("/user")
-    public String showUser(Model model, Principal principal) {
-        model.addAttribute("user", userService.findByUsername(principal.getName()));
+    public String showUser(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+        model.addAttribute("currentUser", userService.findByEmail(currentUser.getUsername()));
         return "user"; // имя представления
     }
 
     @GetMapping("/admin")
-    public String showAdmin(Model model) {
+    public String showAdmin(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+        model.addAttribute("currentUser", userService.findByEmail(currentUser.getUsername()));
+
         model.addAttribute("users", userService.findAll());
+        model.addAttribute("roles", roleService.findAll());
         return "admin"; // имя представления
     }
 
-    @GetMapping(value = "/admin/new")
-    public String newUser(ModelMap model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("roles", roleService.findAll());
-        return "new";
-    }
-
-    @PostMapping(value = "/admin")
+    @PostMapping(value = "/admin/new")
     public String create(@ModelAttribute("user") User user) {
         String encryptedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encryptedPassword);
@@ -62,21 +60,13 @@ public class WebController {
         return "redirect:/admin";
     }
 
-    @DeleteMapping("/admin/delete")
+    @PostMapping("/admin/delete")
     public String deleteUser(@RequestParam(value = "id") Long id) {
-
         userService.deleteUserById(id);
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/edit")
-    public String editUser(@RequestParam(value = "id") Long id, ModelMap model) {
-        model.addAttribute("user", userService.getUserById(id));
-        model.addAttribute("roles", roleService.findAll());
-        return "edit";
-    }
-
-    @PatchMapping("/admin/edit")
+    @PostMapping("/admin/edit")
     public String updateUser(@RequestParam(value = "id") Long id, @ModelAttribute("user") User user) {
         String encryptedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encryptedPassword);
@@ -84,4 +74,5 @@ public class WebController {
         return "redirect:/admin";
 
     }
+
 }

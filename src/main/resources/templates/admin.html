@@ -1,50 +1,365 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-<html lang="ru">
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Пользователи</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Admin panel</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: white;
+        }
+
+        /*Styling popup modals*/
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .popup:target {
+            display: block;
+        }
+
+        .popup-header {
+            text-align: right;
+        }
+
+        .popup-header a {
+            font-size: 20px;
+            text-decoration: none;
+            color: black;
+        }
+
+        /* Overlay for modal background */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .popup:target + .popup-overlay {
+            display: block;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <h1>Список пользователей:</h1>
-    <a href="/admin/new">Добавить</a>
-    <br/>
-    <hr/>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>USERNAME</th>
-            <th>NAME</th>
-            <th>SURNAME</th>
-            <th>AGE</th>
-            <th>ROLES</th>
-        </tr>
-        <tr th:each="user : ${users}">
-            <td th:text="${user.id}"></td>
-            <td th:text="${user.username}"></td>
-            <td th:text="${user.name}"></td>
-            <td th:text="${user.surname}"></td>
-            <td th:text="${user.age}"></td>
-            <td>
-                <ul>
-                <li th:each="role : ${user.roles}" th:text="${role.name}"></li>
-                </ul>
-            </td>
-            <td><a th:href="@{/admin/edit?id={id}(id=${user.id})}">Edit</a></td>
-            <td>
-                <form th:method="DELETE" th:action="@{/admin/delete?id={id}(id=${user.id})}">
-                    <input type="submit" value="Delete"/>
-                </form>
-            </td>
-        </tr>
-    </table>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">
+        <span th:text="${currentUser.getEmail()}"></span> with roles: <span th:each="role : ${currentUser.getRoles()}"
+                                                                            th:text="${role.getName()} + ' '"></span>
+    </a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link px-3" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="row">
+    <div class="col-md-2 px-0">
+        <div class="d-flex flex-column flex-shrink-0 p-0 text-white">
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a href="/admin" class="nav-link active no-refresh">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/user" class="nav-link no-refresh">User</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-10 bg-light">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="admin-panel" role="tabpanel">
+                <div class="container-fluid">
+                    <h2>Admin panel</h2>
+                    <ul class="nav nav-tabs border-bottom-0">
+                        <li class="nav-item">
+                            <a href="#users-table" id="show-users-table" class="nav-link active no-refresh"
+                               data-toggle="tab" aria-current="true" role="tab">
+                                Users table</a>
+                        </li>
+                        <li>
+                            <a href="#newUserPopup" id="show-new-user-form" class="nav-link no-refresh"
+                               data-toggle="tab" aria-current="false" role="tab">
+                                New User</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div id="users-table" class="tab-pane fade show active">
+                            <div class="card">
+                                <div class="container-fluid px-0 bg-light border t">
+                                    <h5 class="card-header">
+                                        All users</h5>
+                                </div>
+
+                                <div class="container-fluid mt-4">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped bg-white">
+                                            <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>First Name</th>
+                                                <th>Last Name</th>
+                                                <th>Age</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Edit</th>
+                                                <th>Delete</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="user : ${users}">
+                                                <td><p th:text="${user.getId()}"></p></td>
+                                                <td><p th:text="${user.getFirstname()}"></p></td>
+                                                <td><p th:text="${user.getLastname()}"></p></td>
+                                                <td><p th:text="${user.getAge()}"></p></td>
+                                                <td><p th:text="${user.getEmail()}"></p></td>
+                                                <td>
+                                                  <span th:each="role : ${user.authorities}"
+                                                        th:text="${role.getName()} + ' '">
+                                                  </span>
+                                                </td>
+
+                                                <td>
+                                                    <a th:href="'#editUserPopup' + ${user.getId()}"
+                                                       class="btn btn-info">Edit</a>
+                                                </td>
+                                                <td>
+                                                    <a th:href="'#deleteUserPopup' + ${user.getId()}"
+                                                       class="btn btn-danger">Delete</a>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add -->
+    <div id="newUserPopup" class="popup">
+        <div class="popup-header">
+            <a href="#">×</a>
+        </div>
+        <h3>Add new user</h3>
+        <hr class="hr"/>
+
+        <form th:action="@{/admin/new}" method="post">
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="firstnameAdd">First name</label>
+                </div>
+                <input type="text" class="form-control" id="firstnameAdd"
+                       name="firstname">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="lastnameAdd">Last name</label>
+                </div>
+                <input type="text" class="form-control" id="lastnameAdd"
+                       name="lastname">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="ageAdd">Age</label>
+                </div>
+                <input type="number" class="form-control" id="ageAdd"
+                       name="age">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="emailAdd">Email</label>
+                </div>
+                <input type="email" class="form-control" id="emailAdd" required
+                       name="email">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label for="passwordAdd">Password</label>
+                </div>
+                <input type="password" class="form-control" id="passwordAdd" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="roleAdd">Role</label>
+                </div>
+                <select class="form-control" multiple id="roleAdd" name="roles">
+                    <option th:each="role : ${roles}" th:text="${role.getName()}"
+                            th:value="${role.getId()}">
+                    </option>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">Add new user</button>
+            </div>
+        </form>
+    </div>
+    <div class="popup-overlay"></div>
+
+    <!--    Edit-->
+    <div th:each="user : ${users}" th:id="'editUserPopup' + ${user.getId()}" class="popup">
+        <div class="popup-header">
+            <a href="#">×</a>
+        </div>
+        <h3>Edit user</h3>
+        <hr class="hr"/>
+        <form th:action="@{/admin/edit?id={id}(id=${user.getId()})}" method="POST">
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="idEdit">ID</label>
+                </div>
+                <input type="number" class="form-control" id="idEdit" th:value="${user.getId()}" readonly
+                       name="id">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="firstnameEdit">First name</label>
+                </div>
+                <input type="text" class="form-control" id="firstnameEdit"
+                       th:value="${user.getFirstname()}"
+                       name="firstname">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="lastnameEdit">Last name</label>
+                </div>
+                <input type="text" class="form-control" id="lastnameEdit"
+                       th:value="${user.getLastname()}"
+                       name="lastname">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="ageEdit">Age</label>
+                </div>
+                <input type="number" class="form-control" id="ageEdit" th:value="${user.getAge()}"
+                       name="age">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="emailEdit">Email</label>
+                </div>
+                <input type="email" class="form-control" id="emailEdit" th:value="${user.getEmail()}"
+                       name="email">
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label for="passwordEdit">Password</label>
+                </div>
+                <input type="password" class="form-control" id="passwordEdit" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="roleEdit">Role</label>
+                </div>
+                <select class="form-control" multiple id="roleEdit" name="roles">
+                    <option th:each="role : ${roles}" th:text="${role.getName()}"
+                            th:value="${role.getId()}">
+                    </option>
+                </select>
+            </div>
+            <div class="text-right">
+                <a href="#" class="btn btn-secondary" role="button">Close</a>
+                <span style="width:3em;"> </span>
+                <button type="submit" class="btn btn-danger">Edit</button>
+            </div>
+        </form>
+    </div>
+    <div class="popup-overlay"></div>
+
+    <!--     Delete -->
+    <div th:each="user : ${users}" th:id="'deleteUserPopup' + ${user.getId()}" class="popup">
+        <div class="popup-header">
+            <a href="#">×</a>
+        </div>
+        <h3>Delete user</h3>
+        <hr class="hr"/>
+        <form th:action="@{/admin/delete?id={id}(id=${user.getId()})}" method="POST">
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="idDel">ID</label>
+                </div>
+                <input type="number" class="form-control" id="idDel" th:value="${user.getId()}" readonly>
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="firstNameDel">First name</label>
+                </div>
+                <input type="text" class="form-control" id="firstNameDel"
+                       th:value="${user.getFirstname()}" readonly>
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="lastNameDel">Last name</label>
+                </div>
+                <input type="text" class="form-control" id="lastNameDel"
+                       th:value="${user.getLastname()}" readonly>
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="ageDel">Age</label>
+                </div>
+                <input type="number" class="form-control" id="ageDel" th:value="${user.getAge()}" readonly>
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="emailDel">Email</label>
+                </div>
+                <input type="email" class="form-control" id="emailDel" th:value="${user.getEmail()}" readonly>
+            </div>
+            <div class="form-group">
+                <div class="text-center">
+                    <label class="font-weight-bold" for="roleDel">Role</label>
+                </div>
+                <select class="form-control" multiple id="roleDel" name="role" disabled>
+                    <option th:each="role : ${user.getAuthorities()}" th:text="${role.getName()}"
+                            th:value="${role.getId()}"></option>
+                </select>
+            </div>
+            <div class="text-right">
+                <a href="#" class="btn btn-secondary" role="button">Close</a>
+                <span style="width:3em;"> </span>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+    <div class="popup-overlay"></div>
 
 </div>
-Logged in user: <b th:inline="text"> [[${#httpServletRequest.remoteUser}]] </b>
-<form th:action="@{/logout}" method="post">
-    <input type="submit" value="Sign Out"/>
-</form>
 </body>
 </html>

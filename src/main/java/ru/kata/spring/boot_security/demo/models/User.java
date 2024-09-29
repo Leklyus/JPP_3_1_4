@@ -15,16 +15,18 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "username", unique = true)
     private String username;
 
     private String password;
 
-    private String name;
+    private String firstname;
 
-    private String surname;
+    private String lastname;
 
     private byte age;
+
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
 
     @ManyToMany
     @JoinTable(name = "users_roles",
@@ -72,20 +74,28 @@ public class User implements UserDetails {
         this.age = age;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override
@@ -120,11 +130,12 @@ public class User implements UserDetails {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
+                "password='" + password + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
                 ", age=" + age +
+                ", email='" + email + '\'' +
+                ", roles=" + roles +
                 '}';
     }
-
 }

@@ -26,6 +26,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -40,8 +45,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void saveAndFlush(Long id, User user) {
         User baseUser = userRepository.getUserById(id);
         baseUser.setUsername(user.getUsername());
-        baseUser.setName(user.getName());
-        baseUser.setSurname(user.getSurname());
+        baseUser.setFirstname(user.getFirstname());
+        baseUser.setLastname(user.getLastname());
         baseUser.setAge(user.getAge());
         baseUser.setPassword(user.getPassword());
         baseUser.setRoles(user.getRoles());
@@ -62,12 +67,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+//        User user = findByUsername(username);
+        User user = findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException(String.format("User '%s' not found.", username));
+            throw new UsernameNotFoundException(String.format("User with email: '%s' not found.", email));
         }
-        return new org.springframework.security.core.userdetails.User(user.getUsername(),
+        return new org.springframework.security.core.userdetails.User(user.getEmail(),
                 user.getPassword(), user.getRoles());
+//        return user;
     }
 }
