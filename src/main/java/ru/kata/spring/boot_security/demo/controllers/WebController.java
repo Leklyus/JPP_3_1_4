@@ -2,7 +2,6 @@ package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,12 +18,9 @@ public class WebController {
     private final UserService userService;
     private final RoleService roleService;
 
-    private final PasswordEncoder passwordEncoder;
-
-    public WebController(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public WebController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping(value = {"/", "/index"})
@@ -54,8 +50,6 @@ public class WebController {
 
     @PostMapping(value = "/admin/new")
     public String create(@ModelAttribute("user") User user) {
-        String encryptedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encryptedPassword);
         userService.saveAndFlush(user);
         return "redirect:/admin";
     }
@@ -68,8 +62,6 @@ public class WebController {
 
     @PostMapping("/admin/edit")
     public String updateUser(@RequestParam(value = "id") Long id, @ModelAttribute("user") User user) {
-        String encryptedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encryptedPassword);
         userService.saveAndFlush(id, user);
         return "redirect:/admin";
 

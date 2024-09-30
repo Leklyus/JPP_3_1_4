@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.models.User;
@@ -14,6 +15,12 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
     private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
@@ -48,7 +55,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         baseUser.setFirstname(user.getFirstname());
         baseUser.setLastname(user.getLastname());
         baseUser.setAge(user.getAge());
-        baseUser.setPassword(user.getPassword());
+
+        String encryptedPassword = passwordEncoder.encode(user.getPassword());
+        baseUser.setPassword(encryptedPassword);
+
         baseUser.setRoles(user.getRoles());
         userRepository.saveAndFlush(baseUser);
     }
@@ -56,6 +66,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     @Transactional
     public void saveAndFlush(User user) {
+        String encryptedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encryptedPassword);
         userRepository.saveAndFlush(user);
     }
 
@@ -75,6 +87,5 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
         return new org.springframework.security.core.userdetails.User(user.getEmail(),
                 user.getPassword(), user.getRoles());
-//        return user;
     }
 }

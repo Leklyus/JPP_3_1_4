@@ -103,18 +103,18 @@
                     <ul class="nav nav-tabs border-bottom-0">
                         <li class="nav-item">
                             <a href="#users-table" id="show-users-table" class="nav-link active no-refresh"
-                               data-toggle="tab" aria-current="true" role="tab">
+                               data-bs-toggle="tab" aria-current="true" role="tab">
                                 Users table</a>
                         </li>
                         <li>
-                            <a href="#newUserPopup" id="show-new-user-form" class="nav-link no-refresh"
-                               data-toggle="tab" aria-current="false" role="tab">
+                            <a href="#new-user-page" id="show-new-user-pabe" class="nav-link no-refresh"
+                               data-bs-toggle="tab" aria-current="false" role="tab">
                                 New User</a>
                         </li>
                     </ul>
 
                     <div class="tab-content">
-                        <div id="users-table" class="tab-pane fade show active">
+                        <div id="users-table" class="tab-pane fade show active" role="tabpanel">
                             <div class="card">
                                 <div class="container-fluid px-0 bg-light border t">
                                     <h5 class="card-header">
@@ -164,72 +164,78 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div id="new-user-page" class="tab-pane fade" role="tabpanel">
+                            <div class="card">
+                                <div class="container-fluid px-0 bg-light border t">
+                                    <h5 class="card-header">
+                                        Add new user</h5>
+                                </div>
+
+                                <div class="container-fluid mt-4">
+                                    <div class="row h-100 justify-content-center align-items-center">
+                                        <form th:action="@{/admin/new}" method="post">
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="firstnameAdd">First
+                                                        name</label>
+                                                </div>
+                                                <input type="text" class="form-control" id="firstnameAdd"
+                                                       name="firstname" size="50">
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="lastnameAdd">Last name</label>
+                                                </div>
+                                                <input type="text" class="form-control" id="lastnameAdd"
+                                                       name="lastname">
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="ageAdd">Age</label>
+                                                </div>
+                                                <input type="number" class="form-control" id="ageAdd"
+                                                       name="age">
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="emailAdd">Email</label>
+                                                </div>
+                                                <input type="email" class="form-control" id="emailAdd" required
+                                                       name="email">
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="passwordAdd">Password</label>
+                                                </div>
+                                                <input type="password" class="form-control" id="passwordAdd"
+                                                       name="password"
+                                                       required>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div class="text-center">
+                                                    <label class="font-weight-bold" for="roleAdd">Role</label>
+                                                </div>
+                                                <select class="form-control" multiple id="roleAdd" name="roles">
+                                                    <option th:each="role : ${roles}" th:text="${role.getName()}"
+                                                            th:value="${role.getId()}">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="text-center">
+                                                <button type="submit" class="btn btn-success">Add new user</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Add -->
-    <div id="newUserPopup" class="popup">
-        <div class="popup-header">
-            <a href="#">×</a>
-        </div>
-        <h3>Add new user</h3>
-        <hr class="hr"/>
-
-        <form th:action="@{/admin/new}" method="post">
-            <div class="form-group">
-                <div class="text-center">
-                    <label class="font-weight-bold" for="firstnameAdd">First name</label>
-                </div>
-                <input type="text" class="form-control" id="firstnameAdd"
-                       name="firstname">
-            </div>
-            <div class="form-group">
-                <div class="text-center">
-                    <label class="font-weight-bold" for="lastnameAdd">Last name</label>
-                </div>
-                <input type="text" class="form-control" id="lastnameAdd"
-                       name="lastname">
-            </div>
-            <div class="form-group">
-                <div class="text-center">
-                    <label class="font-weight-bold" for="ageAdd">Age</label>
-                </div>
-                <input type="number" class="form-control" id="ageAdd"
-                       name="age">
-            </div>
-            <div class="form-group">
-                <div class="text-center">
-                    <label class="font-weight-bold" for="emailAdd">Email</label>
-                </div>
-                <input type="email" class="form-control" id="emailAdd" required
-                       name="email">
-            </div>
-            <div class="form-group">
-                <div class="text-center">
-                    <label for="passwordAdd">Password</label>
-                </div>
-                <input type="password" class="form-control" id="passwordAdd" name="password" required>
-            </div>
-
-            <div class="form-group">
-                <div class="text-center">
-                    <label class="font-weight-bold" for="roleAdd">Role</label>
-                </div>
-                <select class="form-control" multiple id="roleAdd" name="roles">
-                    <option th:each="role : ${roles}" th:text="${role.getName()}"
-                            th:value="${role.getId()}">
-                    </option>
-                </select>
-            </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-success">Add new user</button>
-            </div>
-        </form>
-    </div>
-    <div class="popup-overlay"></div>
 
     <!--    Edit-->
     <div th:each="user : ${users}" th:id="'editUserPopup' + ${user.getId()}" class="popup">
@@ -361,5 +367,10 @@
     <div class="popup-overlay"></div>
 
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
