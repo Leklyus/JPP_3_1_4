@@ -70,8 +70,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="#">
-        <span th:text="${currentUser.getEmail()}"></span> with roles: <span th:each="role : ${currentUser.getRoles()}"
-                                                                            th:text="${role.getName()} + ' '"></span>
+        <span id="currentUserEmail"></span> with roles: <span id="currentUserRoles"></span>
     </a>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
@@ -136,28 +135,8 @@
                                                 <th>Delete</th>
                                             </tr>
                                             </thead>
-                                            <tbody>
-                                            <tr th:each="user : ${users}">
-                                                <td><p th:text="${user.getId()}"></p></td>
-                                                <td><p th:text="${user.getFirstname()}"></p></td>
-                                                <td><p th:text="${user.getLastname()}"></p></td>
-                                                <td><p th:text="${user.getAge()}"></p></td>
-                                                <td><p th:text="${user.getEmail()}"></p></td>
-                                                <td>
-                                                  <span th:each="role : ${user.authorities}"
-                                                        th:text="${role.getName()} + ' '">
-                                                  </span>
-                                                </td>
-
-                                                <td>
-                                                    <a th:href="'#editUserPopup' + ${user.getId()}"
-                                                       class="btn btn-info">Edit</a>
-                                                </td>
-                                                <td>
-                                                    <a th:href="'#deleteUserPopup' + ${user.getId()}"
-                                                       class="btn btn-danger">Delete</a>
-                                                </td>
-                                            </tr>
+                                            <tbody id="users-table-body">
+                                            <!--                                            Load via js-->
                                             </tbody>
                                         </table>
                                     </div>
@@ -174,7 +153,7 @@
 
                                 <div class="container-fluid mt-4">
                                     <div class="row h-100 justify-content-center align-items-center">
-                                        <form th:action="@{/admin/new}" method="post">
+                                        <form id="new-user-form">
                                             <div class="form-group">
                                                 <div class="text-center">
                                                     <label class="font-weight-bold" for="firstnameAdd">First
@@ -218,9 +197,6 @@
                                                     <label class="font-weight-bold" for="roleAdd">Role</label>
                                                 </div>
                                                 <select class="form-control" multiple id="roleAdd" name="roles">
-                                                    <option th:each="role : ${roles}" th:text="${role.getName()}"
-                                                            th:value="${role.getId()}">
-                                                    </option>
                                                 </select>
                                             </div>
                                             <div class="text-center">
@@ -237,19 +213,21 @@
         </div>
     </div>
 
-    <!--    Edit-->
-    <div th:each="user : ${users}" th:id="'editUserPopup' + ${user.getId()}" class="popup">
+    <div id="overlay" class="overlay"></div>
+
+    <!--        Edit-->
+    <div id="editUserPopup" class="popup">
         <div class="popup-header">
-            <a href="#">×</a>
+            <a href="#" id="closePopup1" class="close-popup" data-modal="editUserPopup">×</a>
         </div>
         <h3>Edit user</h3>
         <hr class="hr"/>
-        <form th:action="@{/admin/edit?id={id}(id=${user.getId()})}" method="POST">
+        <form id="editUserForm">
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="idEdit">ID</label>
                 </div>
-                <input type="number" class="form-control" id="idEdit" th:value="${user.getId()}" readonly
+                <input type="number" class="form-control" id="idEdit" readonly
                        name="id">
             </div>
             <div class="form-group">
@@ -257,7 +235,6 @@
                     <label class="font-weight-bold" for="firstnameEdit">First name</label>
                 </div>
                 <input type="text" class="form-control" id="firstnameEdit"
-                       th:value="${user.getFirstname()}"
                        name="firstname">
             </div>
             <div class="form-group">
@@ -265,21 +242,20 @@
                     <label class="font-weight-bold" for="lastnameEdit">Last name</label>
                 </div>
                 <input type="text" class="form-control" id="lastnameEdit"
-                       th:value="${user.getLastname()}"
                        name="lastname">
             </div>
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="ageEdit">Age</label>
                 </div>
-                <input type="number" class="form-control" id="ageEdit" th:value="${user.getAge()}"
+                <input type="number" class="form-control" id="ageEdit"
                        name="age">
             </div>
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="emailEdit">Email</label>
                 </div>
-                <input type="email" class="form-control" id="emailEdit" th:value="${user.getEmail()}"
+                <input type="email" class="form-control" id="emailEdit"
                        name="email">
             </div>
             <div class="form-group">
@@ -294,83 +270,77 @@
                     <label class="font-weight-bold" for="roleEdit">Role</label>
                 </div>
                 <select class="form-control" multiple id="roleEdit" name="roles">
-                    <option th:each="role : ${roles}" th:text="${role.getName()}"
-                            th:value="${role.getId()}">
-                    </option>
                 </select>
             </div>
             <div class="text-right">
-                <a href="#" class="btn btn-secondary" role="button">Close</a>
+                <button type="button" class="btn btn-secondary" id="closePopup2" data-modal="editUserPopup">Close
+                </button>
                 <span style="width:3em;"> </span>
                 <button type="submit" class="btn btn-danger">Edit</button>
             </div>
         </form>
     </div>
-    <div class="popup-overlay"></div>
 
     <!--     Delete -->
-    <div th:each="user : ${users}" th:id="'deleteUserPopup' + ${user.getId()}" class="popup">
+    <div id="deleteUserPopup" class="popup">
         <div class="popup-header">
-            <a href="#">×</a>
+            <a href="#" id="closePopup3" data-modal="deleteUserPopup">×</a>
         </div>
         <h3>Delete user</h3>
         <hr class="hr"/>
-        <form th:action="@{/admin/delete?id={id}(id=${user.getId()})}" method="POST">
+        <form id="deleteUserForm">
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="idDel">ID</label>
                 </div>
-                <input type="number" class="form-control" id="idDel" th:value="${user.getId()}" readonly>
+                <input type="number" class="form-control" id="idDel" name="id" readonly>
             </div>
             <div class="form-group">
                 <div class="text-center">
-                    <label class="font-weight-bold" for="firstNameDel">First name</label>
+                    <label class="font-weight-bold" for="firstnameDel">First name</label>
                 </div>
-                <input type="text" class="form-control" id="firstNameDel"
-                       th:value="${user.getFirstname()}" readonly>
+                <input type="text" class="form-control" id="firstnameDel" readonly>
             </div>
             <div class="form-group">
                 <div class="text-center">
-                    <label class="font-weight-bold" for="lastNameDel">Last name</label>
+                    <label class="font-weight-bold" for="lastnameDel">Last name</label>
                 </div>
-                <input type="text" class="form-control" id="lastNameDel"
-                       th:value="${user.getLastname()}" readonly>
+                <input type="text" class="form-control" id="lastnameDel" readonly>
             </div>
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="ageDel">Age</label>
                 </div>
-                <input type="number" class="form-control" id="ageDel" th:value="${user.getAge()}" readonly>
+                <input type="number" class="form-control" id="ageDel" readonly>
             </div>
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="emailDel">Email</label>
                 </div>
-                <input type="email" class="form-control" id="emailDel" th:value="${user.getEmail()}" readonly>
+                <input type="email" class="form-control" id="emailDel" readonly>
             </div>
             <div class="form-group">
                 <div class="text-center">
                     <label class="font-weight-bold" for="roleDel">Role</label>
                 </div>
                 <select class="form-control" multiple id="roleDel" name="role" disabled>
-                    <option th:each="role : ${user.getAuthorities()}" th:text="${role.getName()}"
-                            th:value="${role.getId()}"></option>
                 </select>
             </div>
             <div class="text-right">
-                <a href="#" class="btn btn-secondary" role="button">Close</a>
+                <a href="#" class="btn btn-secondary" role="button" id="closePopup4"
+                   data-modal="deleteUserPopup">Close</a>
                 <span style="width:3em;"> </span>
                 <button type="submit" class="btn btn-danger">Delete</button>
             </div>
         </form>
     </div>
-    <div class="popup-overlay"></div>
 
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
 
 </body>
 </html>
